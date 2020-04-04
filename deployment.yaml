@@ -37,15 +37,6 @@ spec:
       labels:
         app: ssh-access
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: type
-                operator: In
-                values:
-                - api
       imagePullSecrets:
       - name: pipeline-docker-registry
       containers:

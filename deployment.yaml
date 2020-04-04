@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-access
+  namespace: ssh-access
+spec:
+  type: NodePort
+  ports:
+  - name: ssh-access
+    nodePort: 30022
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    app: ssh-access
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-access
+  namespace: ssh-access
+  labels:
+    app: ssh-access
+spec:
+  replicas: 1
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      app: ssh-access
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ssh-access
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: type
+                operator: In
+                values:
+                - api
+      imagePullSecrets:
+      - name: pipeline-docker-registry
+      containers:
+      - name: ssh-access
+        image: ${CICD_IMAGE}:${CICD_EXECUTION_SEQUENCE}
+        ports:
+        - containerPort: 22
